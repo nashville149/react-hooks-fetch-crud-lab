@@ -1,4 +1,3 @@
-// src/components/QuestionForm.js
 import React, { useState } from "react";
 
 function QuestionForm({ onAddQuestion }) {
@@ -9,31 +8,33 @@ function QuestionForm({ onAddQuestion }) {
   });
 
   function handleChange(e) {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  }
+    const { name, value } = e.target;
 
-  function handleAnswerChange(index, value) {
-    const newAnswers = [...formData.answers];
-    newAnswers[index] = value;
-    setFormData({ ...formData, answers: newAnswers });
+    if (name.startsWith("answer")) {
+      const index = parseInt(name.slice(-1));
+      const newAnswers = [...formData.answers];
+      newAnswers[index] = value;
+      setFormData({ ...formData, answers: newAnswers });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   }
 
   function handleSubmit(e) {
     e.preventDefault();
 
-    const newQuestion = {
-      prompt: formData.prompt,
-      answers: formData.answers,
-      correctIndex: parseInt(formData.correctIndex),
-    };
-
     fetch("http://localhost:4000/questions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newQuestion),
+      body: JSON.stringify({
+        prompt: formData.prompt,
+        answers: formData.answers,
+        correctIndex: parseInt(formData.correctIndex),
+      }),
     })
-      .then((r) => r.json())
-      .then((newQ) => onAddQuestion(newQ));
+      .then((res) => res.json())
+      .then(onAddQuestion)
+      .catch((err) => console.error("POST error:", err));
   }
 
   return (
@@ -42,14 +43,21 @@ function QuestionForm({ onAddQuestion }) {
       <form onSubmit={handleSubmit}>
         <label>
           Prompt:
-          <input name="prompt" value={formData.prompt} onChange={handleChange} />
+          <input
+            type="text"
+            name="prompt"
+            value={formData.prompt}
+            onChange={handleChange}
+          />
         </label>
-        {formData.answers.map((ans, i) => (
-          <label key={i}>
-            Answer {i + 1}:
+        {formData.answers.map((ans, index) => (
+          <label key={index}>
+            Answer {index + 1}:
             <input
+              type="text"
+              name={`answer${index}`}
               value={ans}
-              onChange={(e) => handleAnswerChange(i, e.target.value)}
+              onChange={handleChange}
             />
           </label>
         ))}
@@ -60,9 +68,9 @@ function QuestionForm({ onAddQuestion }) {
             value={formData.correctIndex}
             onChange={handleChange}
           >
-            {formData.answers.map((_, i) => (
-              <option key={i} value={i}>
-                {`Choice ${i + 1}`}
+            {formData.answers.map((ans, index) => (
+              <option key={index} value={index}>
+                {ans || `Answer ${index + 1}`}
               </option>
             ))}
           </select>

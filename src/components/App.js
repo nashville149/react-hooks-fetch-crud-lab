@@ -1,38 +1,44 @@
-// src/components/App.js
-import React, { useState, useEffect } from "react";
-import AdminNavBar from "./AdminNavBar";
+import React, { useEffect, useState } from "react";
 import QuestionForm from "./QuestionForm";
 import QuestionList from "./QuestionList";
 
 function App() {
-  const [page, setPage] = useState("List");
   const [questions, setQuestions] = useState([]);
+  const [view, setView] = useState("form");
 
+  // GET /questions
   useEffect(() => {
     fetch("http://localhost:4000/questions")
       .then((res) => res.json())
-      .then((data) => setQuestions(data));
+      .then(setQuestions)
+      .catch((err) => console.error("Fetch error:", err));
   }, []);
 
+  // POST
   function handleAddQuestion(newQuestion) {
     setQuestions([...questions, newQuestion]);
   }
 
-  function handleDeleteQuestion(id) {
-    setQuestions(questions.filter((q) => q.id !== id));
+  // DELETE
+  function handleDeleteQuestion(deletedId) {
+    setQuestions(questions.filter((q) => q.id !== deletedId));
   }
 
+  // PATCH
   function handleUpdateQuestion(updatedQuestion) {
-    const updatedQuestions = questions.map((q) =>
+    const updatedList = questions.map((q) =>
       q.id === updatedQuestion.id ? updatedQuestion : q
     );
-    setQuestions(updatedQuestions);
+    setQuestions(updatedList);
   }
 
   return (
     <main>
-      <AdminNavBar onChangePage={setPage} />
-      {page === "Form" ? (
+      <nav>
+        <button onClick={() => setView("form")}>New Question</button>
+        <button onClick={() => setView("list")}>View Questions</button>
+      </nav>
+      {view === "form" ? (
         <QuestionForm onAddQuestion={handleAddQuestion} />
       ) : (
         <QuestionList

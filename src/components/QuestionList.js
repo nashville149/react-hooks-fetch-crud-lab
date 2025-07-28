@@ -10,8 +10,8 @@ function QuestionList({ questions, onDeleteQuestion, onUpdateQuestion }) {
           <QuestionItem
             key={q.id}
             question={q}
-            onDeleteQuestion={onDeleteQuestion}
-            onUpdateQuestion={onUpdateQuestion}
+            onDelete={onDeleteQuestion}
+            onUpdate={onUpdateQuestion}
           />
         ))}
       </ul>
